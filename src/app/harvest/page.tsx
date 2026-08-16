@@ -1,10 +1,35 @@
 'use client';
 
+import { useState } from 'react';
 import DashboardLayout from '../layout-wrapper';
-import { mockHarvestBatches } from '@/lib/mock-data';
-import { Wheat, Plus, ShieldCheck, CheckCircle2, Award, FileText } from 'lucide-react';
+import { useAppState } from '@/context/AppStateContext';
+import { Wheat, Plus, ShieldCheck, X } from 'lucide-react';
 
 export default function HarvestModule() {
+  const { harvestBatches, farmers, logHarvestBatch } = useAppState();
+  const [showModal, setShowModal] = useState(false);
+
+  // Form State
+  const [selectedFarmerId, setSelectedFarmerId] = useState(farmers[0]?.id || '');
+  const [crop, setCrop] = useState('Yellow Maize');
+  const [actualYieldKg, setActualYieldKg] = useState('25000');
+  const [moistureContentPct, setMoistureContentPct] = useState('12.5');
+  const [qualityGrade, setQualityGrade] = useState<'Grade A' | 'Grade B' | 'Grade C'>('Grade A');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const farmer = farmers.find((f) => f.id === selectedFarmerId) || farmers[0];
+    logHarvestBatch({
+      farmerId: farmer.id,
+      farmerName: farmer.fullName,
+      crop,
+      actualYieldKg: Number(actualYieldKg),
+      moistureContentPct: Number(moistureContentPct),
+      qualityGrade,
+    });
+    setShowModal(false);
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
@@ -19,15 +44,17 @@ export default function HarvestModule() {
           </p>
         </div>
 
-        <button className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition shadow-lg shadow-amber-950/40 text-sm">
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl transition shadow-lg shadow-amber-950/40 text-sm"
+        >
           <Plus className="w-4 h-4" />
           <span>New Intake Receipt</span>
         </button>
       </div>
 
-      {/* Harvest Batch Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {mockHarvestBatches.map((batch) => (
+        {harvestBatches.map((batch) => (
           <div key={batch.id} className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
             <div className="flex justify-between items-start">
               <div>
@@ -69,6 +96,94 @@ export default function HarvestModule() {
           </div>
         ))}
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <h3 className="font-extrabold text-white text-lg">Log Farm Gate Harvest & Quality Inspection</h3>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Farmer</label>
+                <select
+                  value={selectedFarmerId}
+                  onChange={(e) => setSelectedFarmerId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
+                >
+                  {farmers.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.fullName} ({f.community})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Crop</label>
+                  <input
+                    type="text"
+                    required
+                    value={crop}
+                    onChange={(e) => setCrop(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Quality Grade</label>
+                  <select
+                    value={qualityGrade}
+                    onChange={(e: any) => setQualityGrade(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
+                  >
+                    <option value="Grade A">Grade A</option>
+                    <option value="Grade B">Grade B</option>
+                    <option value="Grade C">Grade C</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Actual Weight (KG)</label>
+                  <input
+                    type="number"
+                    required
+                    value={actualYieldKg}
+                    onChange={(e) => setActualYieldKg(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Moisture Content (%)</label>
+                  <input
+                    type="text"
+                    required
+                    value={moistureContentPct}
+                    onChange={(e) => setMoistureContentPct(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-xs font-bold text-slate-400">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 text-xs font-bold bg-amber-500 text-slate-950 rounded-xl hover:bg-amber-400">
+                  Generate Warehouse Receipt
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

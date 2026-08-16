@@ -22,21 +22,21 @@ import {
   MessageSquare,
   Calendar,
   Settings,
-  HelpCircle,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAppState } from '@/context/AppStateContext';
 
 export const modulesNav = [
-  { slug: 'budget', name: 'Module 1: Budget', desc: 'Financial planning & variance', icon: PieChart, accent: 'text-emerald-400 border-emerald-500/20' },
-  { slug: 'partners', name: 'Module 2: Partners', desc: 'Suppliers, SLA & Vetting', icon: Users, accent: 'text-amber-400 border-amber-500/20' },
-  { slug: 'raise-funds', name: 'Module 3: Raise Funds', desc: 'Crowd-sponsor & investor ROI', icon: TrendingUp, accent: 'text-teal-400 border-teal-500/20' },
-  { slug: 'farmers', name: 'Module 4: Farmers', desc: 'Ghana Card KYC & GIS assets', icon: UserCheck, accent: 'text-emerald-400 border-emerald-500/20' },
-  { slug: 'inputs', name: 'Module 5: Inputs', desc: 'Vouchers & OTP pickup', icon: Truck, accent: 'text-sky-400 border-sky-500/20' },
-  { slug: 'mechanization', name: 'Module 6: Mechanization', desc: 'GPS tractor telematics', icon: MapPin, accent: 'text-indigo-400 border-indigo-500/20' },
-  { slug: 'harvest', name: 'Module 7: Harvest', desc: 'Yield & EUDR grading', icon: Wheat, accent: 'text-amber-400 border-amber-500/20' },
-  { slug: 'retrieval', name: 'Module 8: Retrieval', desc: 'Waybill & debt deduction', icon: RotateCcw, accent: 'text-purple-400 border-purple-500/20' },
-  { slug: 'trade', name: 'Module 9: Trade Dept', desc: 'GCX & off-taker spot/futures', icon: ShoppingBag, accent: 'text-blue-400 border-blue-500/20' },
-  { slug: 'money-back', name: 'Module 10: Money Back', desc: 'Waterfall & MoMo payouts', icon: DollarSign, accent: 'text-emerald-400 border-emerald-500/20' },
+  { slug: 'budget', name: 'Budget', desc: 'Financial planning & variance', icon: PieChart, accent: 'text-emerald-400 border-emerald-500/20' },
+  { slug: 'partners', name: 'Partners', desc: 'Suppliers, SLA & Vetting', icon: Users, accent: 'text-amber-400 border-amber-500/20' },
+  { slug: 'raise-funds', name: 'Raise Funds', desc: 'Crowd-sponsor & investor ROI', icon: TrendingUp, accent: 'text-teal-400 border-teal-500/20' },
+  { slug: 'farmers', name: 'Farmers', desc: 'Ghana Card KYC & GIS assets', icon: UserCheck, accent: 'text-emerald-400 border-emerald-500/20' },
+  { slug: 'inputs', name: 'Inputs', desc: 'Vouchers & OTP pickup', icon: Truck, accent: 'text-sky-400 border-sky-500/20' },
+  { slug: 'mechanization', name: 'Mechanization', desc: 'GPS tractor telematics', icon: MapPin, accent: 'text-indigo-400 border-indigo-500/20' },
+  { slug: 'harvest', name: 'Harvest', desc: 'Yield & EUDR grading', icon: Wheat, accent: 'text-amber-400 border-amber-500/20' },
+  { slug: 'retrieval', name: 'Retrieval', desc: 'Waybill & debt deduction', icon: RotateCcw, accent: 'text-purple-400 border-purple-500/20' },
+  { slug: 'trade', name: 'Trade Dept', desc: 'GCX & off-taker spot/futures', icon: ShoppingBag, accent: 'text-blue-400 border-blue-500/20' },
+  { slug: 'money-back', name: 'Money Back', desc: 'Waterfall & MoMo payouts', icon: DollarSign, accent: 'text-emerald-400 border-emerald-500/20' },
 ];
 
 export const secondaryNav = [
@@ -44,12 +44,15 @@ export const secondaryNav = [
   { name: 'Calendar & Cycles', icon: Calendar, href: '/calendar' },
   { name: 'Messages & Alerts', icon: MessageSquare, href: '/messages' },
   { name: 'Documents & Contracts', icon: FileText, href: '/documents' },
-  { name: 'Settings & Roles', icon: Settings, href: '/settings' },
+  { name: 'Settings & Roles', icon: Settings, href: '/settings', requiresAdminOrStaff: true },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { activeUserPerspective } = useAppState();
+
+  const isFieldAgent = activeUserPerspective === 'field_agent';
 
   return (
     <aside
@@ -93,11 +96,10 @@ export function Sidebar() {
 
       {/* Nav List */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        {/* Core Hub Modules */}
         <div>
           {!collapsed && (
             <div className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
-              <span>10 Core Hub Modules</span>
+              <span>Operational Hubs</span>
               <span className="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/20">
                 Active
               </span>
@@ -127,7 +129,7 @@ export function Sidebar() {
                   />
                   {!collapsed && (
                     <div className="overflow-hidden">
-                      <div className="truncate font-semibold text-slate-100">{item.name.replace(/^Module \d+: /, '')}</div>
+                      <div className="truncate font-semibold text-slate-100">{item.name}</div>
                       <div className="text-[11px] text-slate-400 truncate leading-none mt-0.5">{item.desc}</div>
                     </div>
                   )}
@@ -146,6 +148,7 @@ export function Sidebar() {
           )}
           <nav className="space-y-1">
             {secondaryNav.map((item) => {
+              if (item.requiresAdminOrStaff && isFieldAgent) return null;
               const isActive = pathname === item.href;
               const Icon = item.icon;
               return (
@@ -180,10 +183,16 @@ export function Sidebar() {
           </div>
           {!collapsed && (
             <div className="overflow-hidden flex-1">
-              <div className="text-sm font-bold text-slate-200 truncate">Nana Kwame Addo</div>
+              <div className="text-sm font-bold text-slate-200 truncate">
+                {activeUserPerspective === 'superadmin'
+                  ? 'Nana Kwame Addo'
+                  : activeUserPerspective === 'staff'
+                  ? 'Abena Osei (Staff)'
+                  : 'Kwame Boateng (Field Agent)'}
+              </div>
               <div className="text-xs text-slate-400 truncate flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                <span>Super Admin</span>
+                <span className="capitalize">{activeUserPerspective.replace('_', ' ')}</span>
               </div>
             </div>
           )}

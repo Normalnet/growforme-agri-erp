@@ -3,7 +3,7 @@
 import DashboardLayout from '../layout-wrapper';
 import { mockMechanizationLogs } from '@/lib/mock-data';
 import { MechanizationMap } from '@/components/map/MechanizationMap';
-import { MapPin, Plus, Radio, Gauge, Flame, Clock, Navigation } from 'lucide-react';
+import { MapPin, Plus, Radio, ShieldCheck } from 'lucide-react';
 
 export default function MechanizationModule() {
   return (
@@ -14,7 +14,7 @@ export default function MechanizationModule() {
             <MapPin className="w-4 h-4" />
             Module 06 / GPS Telematics & Land Prep
           </div>
-          <h1 className="text-3xl font-extrabold text-white mt-1">Live Mechanization Tracking</h1>
+          <h1 className="text-3xl font-extrabold text-white mt-1">Live Mechanization & Fleet Tracking</h1>
           <p className="text-sm text-slate-400 mt-0.5">
             Monitor farm preparation, plowing, harrowing, planting, and drone spraying in real-time.
           </p>
@@ -24,6 +24,21 @@ export default function MechanizationModule() {
           <Plus className="w-4 h-4" />
           <span>Dispatch Machinery</span>
         </button>
+      </div>
+
+      <div className="p-4 bg-slate-900/90 rounded-2xl border border-indigo-500/30 flex items-center justify-between text-xs text-slate-300">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="font-bold text-white">System GPS Telematics:</span> <code className="text-indigo-400 font-mono">WGS84 Live Polygon Feed</code>
+            <span className="text-slate-400 ml-3">Active Hubs: Tamale, Ejura & Techiman Centers</span>
+          </div>
+        </div>
+        <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+          Telemetry Online
+        </span>
       </div>
 
       {/* Geospatial Map Container */}

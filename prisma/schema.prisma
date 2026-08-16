@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  field_agent
+  investor
+  aggregator
+  offtaker
+}
+
+enum CropType {
+  Maize
+  Soybeans
+  Cashew
+  Rice
+  Sorghum
+}
+
+enum CycleStatus {
+  Planning
+  Input_Disbursement
+  Active_Cultivation
+  Harvesting
+  Retrieval_And_Sales
+  Settled
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  role         Role     @default(field_agent)
+  phone        String?
+  avatar       String?
+  organization String?
+  region       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SeasonCycle {
+  id               String            @id @default(uuid())
+  name             String
+  crop             CropType
+  region           String
+  startDate        DateTime
+  endDate          DateTime
+  targetAcreage    Float
+  allocatedAcreage Float             @default(0)
+  totalFarmers     Int               @default(0)
+  budgetTotalGHS   Float             @default(0)
+  status           CycleStatus       @default(Planning)
+  budgets          BudgetItem[]
+  campaigns        FundingCampaign[]
+  harvestBatches   HarvestBatch[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model BudgetItem {
+  id                String      @id @default(uuid())
+  cycleId           String
+  cycle             SeasonCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  category          String
+  description       String
+  budgetedAmountGHS Float
+  actualAmountGHS   Float       @default(0)
+  varianceGHS       Float       @default(0)
+  status            String      @default("On Track")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model Partner {
+  id                String   @id @default(uuid())
+  name              String
+  category          String
+  contactPerson     String
+  phone             String
+  email             String
+  location          String
+  complianceScore   Float    @default(100)
+  slaStatus         String   @default("Active")
+  totalContractsGHS Float    @default(0)
+  rating            Float    @default(5.0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model FundingCampaign {
+  id               String       @id @default(uuid())
+  cycleId          String
+  cycle            SeasonCycle  @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  title            String
+  crop             String
+  targetAmountGHS  Float
+  raisedAmountGHS  Float        @default(0)
+  expectedROI      Float
+  minInvestmentGHS Float
+  totalInvestors   Int          @default(0)
+  daysRemaining    Int
+  status           String       @default("Open")
+  investments      Investment[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model Investment {
+  id                String          @id @default(uuid())
+  campaignId        String
+  campaign          FundingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  investorName      String
+  investorType      String
+  amountGHS         Float
+  expectedReturnGHS Float
+  date              DateTime        @default(now())
+  status            String          @default("Active")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model Farmer {
+  id                  String               @id @default(uuid())
+  fullName            String
+  ghanaCardNo         String               @unique
+  momoNumber          String
+  momoNetwork         String
+  gender              String
+  community           String
+  district            String
+  region              String
+  totalAcreage        Float                @default(0)
+  cooperativeCluster  String
+  agronomicScore      Float                @default(80)
+  totalLoansInKindGHS Float                @default(0)
+  activeStatus        String               @default("Verified")
+  farms               FarmAsset[]
+  disbursements       InputDisbursement[]
+  retrievals          CommodityRetrieval[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}
+
+model FarmAsset {
+  id               String             @id @default(uuid())
+  farmerId         String
+  farmer           Farmer             @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  farmCode         String             @unique
+  crop             String
+  acreage          Float
+  soilType         String
+  tenureAgreement  String
+  gpsLat           Float
+  gpsLng           Float
+  status           String             @default("Prepared")
+  mechanizationLogs MechanizationLog[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model InputInventory {
+  id             String   @id @default(uuid())
+  itemCode       String   @unique
+  name           String
+  category       String
+  warehouseDepot String
+  totalStock     Float
+  allocatedStock Float    @default(0)
+  unit           String
+  unitCostGHS    Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model InputDisbursement {
+  id                 String   @id @default(uuid())
+  voucherCode        String   @unique
+  farmerId           String
+  farmer             Farmer   @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  depotName          String
+  totalCostGHS       Float
+  verificationMethod String   @default("OTP")
+  status             String   @default("Picked Up")
+  disbursedDate      DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model MechanizationLog {
+  id                 String    @id @default(uuid())
+  jobCardId          String    @unique
+  farmId             String
+  farm               FarmAsset @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  machineryType      String
+  operatorName       String
+  acresCovered       Float
+  fuelConsumedLitres Float
+  startTime          String
+  endTime            String
+  status             String    @default("In Progress")
+  lat                Float
+  lng                Float
+  costGHS            Float
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model HarvestBatch {
+  id                 String      @id @default(uuid())
+  batchNo            String      @unique
+  cycleId            String
+  cycle              SeasonCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  farmerName         String
+  crop               String
+  expectedYieldKg    Float
+  actualYieldKg      Float
+  moistureContentPct Float
+  foreignMatterPct   Float
+  aflatoxinPpb       Float
+  eudrCompliant      Boolean     @default(true)
+  qualityGrade       String
+  warehouseReceiptNo String
+  dateHarvested      DateTime    @default(now())
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model CommodityRetrieval {
+  id                 String   @id @default(uuid())
+  waybillNo          String   @unique
+  farmerId           String
+  farmer             Farmer   @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  cooperativeCluster String
+  commodity          String
+  bagsRetrieved      Int
+  grossWeightKg      Float
+  inKindDebtGHS      Float
+  retrievedValueGHS  Float
+  driverName         String
+  vehicleRegNo       String
+  destinationDepot   String
+  status             String   @default("Received at Depot")
+  date               DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model TradeOrder {
+  id                  String   @id @default(uuid())
+  contractNo          String   @unique
+  offtakerName        String
+  offtakerType        String
+  commodity           String
+  quantityMT          Float
+  pricePerMTGHS       Float
+  totalValueGHS       Float
+  fulfilledQuantityMT Float    @default(0)
+  contractType        String   @default("Spot Contract")
+  deliveryDeadline    String
+  status              String   @default("Pending")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model SettlementRecord {
+  id                      String   @id @default(uuid())
+  cycleName               String
+  grossRevenueGHS         Float
+  investorPayoutGHS       Float
+  inputRecoveryGHS        Float
+  aggregatorCommissionGHS Float
+  farmerNetProfitGHS      Float
+  settlementDate          DateTime @default(now())
+  status                  String   @default("Waterfall Computed")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
