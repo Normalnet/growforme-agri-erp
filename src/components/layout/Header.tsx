@@ -1,11 +1,15 @@
 'use client';
 
-import { Search, Bell, Globe, ChevronDown, CheckCircle2, ShieldCheck, Shield, X, ArrowRight } from 'lucide-react';
+import { Search, Bell, Globe, ChevronDown, CheckCircle2, ShieldCheck, Shield, X, ArrowRight, Menu } from 'lucide-react';
 import { useAppState } from '@/context/AppStateContext';
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 
-export function Header() {
+interface HeaderProps {
+  onMenuToggle: () => void;
+}
+
+export function Header({ onMenuToggle }: HeaderProps) {
   const {
     activeUserPerspective,
     setActiveUserPerspective,
@@ -22,9 +26,9 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const perspectives = [
-    { key: 'superadmin', label: 'Super Admin (Full HQ & DB Control)' },
-    { key: 'staff', label: 'Staff Member (Can Assign Field Agents)' },
-    { key: 'field_agent', label: 'Field Agent (Outgrower Operations)' },
+    { key: 'superadmin', label: 'Super Admin' },
+    { key: 'staff', label: 'Staff Member' },
+    { key: 'field_agent', label: 'Field Agent' },
   ];
 
   // Dynamic Multi-Entity Global Search Engine
@@ -34,7 +38,6 @@ export function Header() {
 
     const results: { type: string; title: string; subtitle: string; link: string }[] = [];
 
-    // Search Farmers (Ghana Card, Name, Momo)
     farmers.forEach((f) => {
       if (
         f.fullName.toLowerCase().includes(q) ||
@@ -51,7 +54,6 @@ export function Header() {
       }
     });
 
-    // Search Retrievals (Waybill #)
     retrievals.forEach((r) => {
       if (
         r.waybillNo.toLowerCase().includes(q) ||
@@ -67,7 +69,6 @@ export function Header() {
       }
     });
 
-    // Search Input Vouchers
     disbursements.forEach((d) => {
       if (
         d.voucherCode.toLowerCase().includes(q) ||
@@ -83,7 +84,6 @@ export function Header() {
       }
     });
 
-    // Search Trade Contracts
     tradeOrders.forEach((t) => {
       if (
         t.contractNo.toLowerCase().includes(q) ||
@@ -99,7 +99,6 @@ export function Header() {
       }
     });
 
-    // Search Partners
     partners.forEach((p) => {
       if (
         p.name.toLowerCase().includes(q) ||
@@ -115,7 +114,6 @@ export function Header() {
       }
     });
 
-    // Search Cycles
     cycles.forEach((c) => {
       if (c.name.toLowerCase().includes(q) || c.crop.toLowerCase().includes(q)) {
         results.push({
@@ -127,11 +125,20 @@ export function Header() {
       }
     });
 
-    return results.slice(0, 8); // Top 8 matches
+    return results.slice(0, 8);
   }, [searchQuery, farmers, retrievals, disbursements, tradeOrders, partners, cycles]);
 
   return (
-    <header className="h-16 bg-[#0F172A]/95 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 flex items-center justify-between px-6">
+    <header className="h-16 bg-[#0F172A]/95 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 gap-3">
+      {/* Mobile Menu Toggle */}
+      <button
+        onClick={onMenuToggle}
+        className="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
+        aria-label="Toggle Navigation Menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       {/* Dynamic Working Global Search Bar */}
       <div className="flex items-center gap-4 flex-1 max-w-md relative">
         <div className="relative w-full">
@@ -144,8 +151,8 @@ export function Header() {
               setIsSearchOpen(true);
             }}
             onFocus={() => setIsSearchOpen(true)}
-            placeholder="Search Ghana Card, Waybill #, Voucher, Contract, Farmer..."
-            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+            placeholder="Search Card, Waybill #, Voucher..."
+            className="w-full pl-9 sm:pl-10 pr-8 sm:pr-9 py-1.5 sm:py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs sm:text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
           />
           {searchQuery && (
             <button
@@ -165,7 +172,7 @@ export function Header() {
           <div className="absolute top-12 left-0 right-0 bg-[#1E293B] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-50 p-2 space-y-1">
             <div className="px-3 py-1.5 text-[10px] font-bold uppercase text-slate-400 border-b border-slate-800 flex justify-between">
               <span>Matches Found ({searchResults.length})</span>
-              <span className="text-emerald-400">Live Search Active</span>
+              <span className="text-emerald-400">Live Search</span>
             </div>
 
             {searchResults.length > 0 ? (
@@ -178,21 +185,21 @@ export function Header() {
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white group-hover:text-emerald-400 transition">
+                      <span className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-400 transition">
                         {res.title}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-slate-400 font-mono">
+                      <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-slate-400 font-mono">
                         {res.type}
                       </span>
                     </div>
-                    <div className="text-xs text-slate-400 mt-0.5">{res.subtitle}</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">{res.subtitle}</div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition" />
                 </Link>
               ))
             ) : (
               <div className="p-4 text-center text-xs text-slate-400">
-                No matching Ghana Card, Waybill #, or record found for "{searchQuery}".
+                No matching Ghana Card or record found for "{searchQuery}".
               </div>
             )}
           </div>
@@ -200,8 +207,8 @@ export function Header() {
       </div>
 
       {/* Right Action Utilities */}
-      <div className="flex items-center gap-4">
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300">
           <Globe className="w-3.5 h-3.5 text-emerald-400" />
           <span>Ecosystem: <strong className="text-white">Ghana Agribusiness</strong></span>
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1"></span>
@@ -216,15 +223,16 @@ export function Header() {
         <div className="relative">
           <button
             onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/30 text-xs font-semibold text-emerald-400 hover:border-emerald-500/60 transition shadow-sm"
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/30 text-xs font-semibold text-emerald-400 hover:border-emerald-500/60 transition shadow-sm"
           >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Active Session: <strong className="text-white capitalize">{activeUserPerspective.replace('_', ' ')}</strong></span>
+            <Shield className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="hidden sm:inline">Role: <strong className="text-white capitalize">{activeUserPerspective.replace('_', ' ')}</strong></span>
+            <span className="sm:hidden font-bold uppercase">{activeUserPerspective.substring(0, 5)}</span>
             <ChevronDown className="w-3.5 h-3.5" />
           </button>
 
           {showRoleDropdown && (
-            <div className="absolute right-0 mt-2 w-72 bg-[#1E293B] border border-slate-700 rounded-xl shadow-2xl py-2 z-50">
+            <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-[#1E293B] border border-slate-700 rounded-xl shadow-2xl py-2 z-50">
               <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase border-b border-slate-800 mb-1">
                 Switch Role Perspective
               </div>
