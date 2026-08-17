@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
             <div>
               © {new Date().getFullYear()} <strong className="text-white">GrowForMe Agri Finance Management System</strong>. Developed by{' '}
-              <span className="text-emerald-400 font-bold">SmartMusto</span> for <strong className="text-white">GrowForMe</strong>. All rights reserved.
+              <span className="text-emerald-400 font-bold">Ashesi ICS Students</span> for <strong className="text-white">GrowForMe</strong>. All rights reserved.
             </div>
             <div className="flex items-center gap-4 text-slate-500 text-[11px]">
               <span>Privacy Policy</span>

@@ -1,6 +1,6 @@
 # GrowForMe Agri Finance Management System
 
-An enterprise-grade agricultural financing, outgrower aggregation, and supply chain ERP tailored for the Ghanaian and African agribusiness ecosystem. Developed by **SmartMusto** for **GrowForMe**.
+An enterprise-grade agricultural financing, outgrower aggregation, and supply chain ERP tailored for the Ghanaian and African agribusiness ecosystem. Developed by **Ashesi ICS Students** for **GrowForMe**.
 
 ---
 
@@ -83,4 +83,4 @@ npx prisma db push
 
 ## Copyright & Licensing
 
-© 2026 **GrowForMe Agri Finance Management System**. Developed by **SmartMusto** for **GrowForMe**. All rights reserved.
+© 2026 **GrowForMe Agri Finance Management System**. Developed by **Ashesi ICS Students** for **GrowForMe**. All rights reserved.
