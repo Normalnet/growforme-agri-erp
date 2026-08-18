@@ -135,11 +135,16 @@ interface AppStateContextType {
   deleteStaffUser: (id: string) => void;
 
   addCycleWithCampaign: (cycleData: Partial<SeasonCycle>, budgetItemsData: Partial<BudgetItem>[]) => void;
+  addCycleOnly: (cycleData: Partial<SeasonCycle>) => void;
+  updateCycleTimeline: (id: string, updatedData: Partial<SeasonCycle>) => void;
+  addFundingCampaign: (campaignData: Partial<FundingCampaign>) => void;
   addFarmerWithFarm: (farmerData: Partial<Farmer>, farmData: Partial<FarmAsset>) => void;
   addPartner: (partnerData: Partial<Partner>) => void;
   addInvestment: (investmentData: Partial<Investment>) => void;
   issueInputVoucher: (voucherData: Partial<InputDisbursement>, farmerId: string, costGHS: number) => void;
   bookMechanizationJob: (jobData: Partial<MechanizationLog>, farmerId: string, costGHS: number) => void;
+  toggleMechanizationStatus: (id: string) => void;
+  updateMechanizationLog: (id: string, updatedData: Partial<MechanizationLog>) => void;
   logHarvestBatch: (batchData: Partial<HarvestBatch>) => void;
   createWaybillRetrieval: (retrievalData: Partial<CommodityRetrieval>, farmerId: string, bags: number, valueGHS: number) => void;
   createTradeContract: (tradeData: Partial<TradeOrder>) => void;
@@ -344,6 +349,37 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     persistState({ cycles: updatedCycles, budgetItems: updatedBudgets, campaigns: updatedCampaigns, partners, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
   };
 
+  const addCycleOnly = (cycleData: Partial<SeasonCycle>) => {
+    const cycleId = `cyc_${Date.now()}`;
+    const newCycle: SeasonCycle = {
+      id: cycleId,
+      name: cycleData.name || 'New Crop Cycle',
+      crop: cycleData.crop || 'Maize',
+      region: cycleData.region || 'Northern',
+      startDate: cycleData.startDate || new Date().toISOString().split('T')[0],
+      endDate: cycleData.endDate || new Date(Date.now() + 120 * 86400000).toISOString().split('T')[0],
+      targetAcreage: Number(cycleData.targetAcreage) || 1000,
+      allocatedAcreage: 0,
+      totalFarmers: 0,
+      budgetTotalGHS: Number(cycleData.budgetTotalGHS) || 500000,
+      status: cycleData.status || 'Planning',
+    };
+    const updatedCycles = [newCycle, ...cycles];
+    setCycles(updatedCycles);
+    persistState({ cycles: updatedCycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
+  };
+
+  const updateCycleTimeline = (id: string, updatedData: Partial<SeasonCycle>) => {
+    const updatedCycles = cycles.map((c) => {
+      if (c.id === id) {
+        return { ...c, ...updatedData };
+      }
+      return c;
+    });
+    setCycles(updatedCycles);
+    persistState({ cycles: updatedCycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
+  };
+
   const addFarmerWithFarm = (farmerData: Partial<Farmer>, farmData: Partial<FarmAsset>) => {
     const farmerId = `frm_${Date.now()}`;
     const newFarmer: Farmer = {
@@ -435,6 +471,25 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     persistState({ cycles, budgetItems, partners, campaigns: updatedCampaigns, investments: updatedInvestments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
   };
 
+  const addFundingCampaign = (campaignData: Partial<FundingCampaign>) => {
+    const newCamp: FundingCampaign = {
+      id: `camp_${Date.now()}`,
+      cycleId: campaignData.cycleId || (cycles[0]?.id || 'cyc_01'),
+      title: campaignData.title || 'New Crowdfunding Campaign',
+      crop: campaignData.crop || 'Maize',
+      targetAmountGHS: Number(campaignData.targetAmountGHS) || 500000,
+      raisedAmountGHS: 0,
+      expectedROI: Number(campaignData.expectedROI) || 18,
+      minInvestmentGHS: Number(campaignData.minInvestmentGHS) || 1000,
+      totalInvestors: 0,
+      daysRemaining: Number(campaignData.daysRemaining) || 30,
+      status: 'Open',
+    };
+    const updatedCampaigns = [newCamp, ...campaigns];
+    setCampaigns(updatedCampaigns);
+    persistState({ cycles, budgetItems, partners, campaigns: updatedCampaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
+  };
+
   const issueInputVoucher = (voucherData: Partial<InputDisbursement>, farmerId: string, costGHS: number) => {
     const farmer = farmers.find((f) => f.id === farmerId) || farmers[0];
     const newDisb: InputDisbursement = {
@@ -492,6 +547,29 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setMechanizationLogs(updatedLogs);
 
     persistState({ cycles, budgetItems, partners, campaigns, investments, farmers: updatedFarmers, farms, inputs, disbursements, mechanizationLogs: updatedLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
+  };
+
+  const toggleMechanizationStatus = (id: string) => {
+    const updatedLogs = mechanizationLogs.map((log) => {
+      if (log.id === id) {
+        const nextStatus = log.status === 'Completed' ? 'In Progress' : 'Completed';
+        return { ...log, status: nextStatus as any };
+      }
+      return log;
+    });
+    setMechanizationLogs(updatedLogs);
+    persistState({ cycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs: updatedLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
+  };
+
+  const updateMechanizationLog = (id: string, updatedData: Partial<MechanizationLog>) => {
+    const updatedLogs = mechanizationLogs.map((log) => {
+      if (log.id === id) {
+        return { ...log, ...updatedData };
+      }
+      return log;
+    });
+    setMechanizationLogs(updatedLogs);
+    persistState({ cycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs: updatedLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
   };
 
   const logHarvestBatch = (batchData: Partial<HarvestBatch>) => {
@@ -597,6 +675,9 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (type === 'partner') setPartners(partners.filter((p) => p.id !== id));
     if (type === 'cycle') setCycles(cycles.filter((c) => c.id !== id));
     if (type === 'trade') setTradeOrders(tradeOrders.filter((t) => t.id !== id));
+    if (type === 'mechanization') setMechanizationLogs(mechanizationLogs.filter((m) => m.id !== id));
+    if (type === 'campaign') setCampaigns(campaigns.filter((c) => c.id !== id));
+    if (type === 'investment') setInvestments(investments.filter((i) => i.id !== id));
   };
 
   const resetToDefaultSeed = () => {
@@ -651,11 +732,16 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         deleteStaffUser,
 
         addCycleWithCampaign,
+        addCycleOnly,
+        updateCycleTimeline,
+        addFundingCampaign,
         addFarmerWithFarm,
         addPartner,
         addInvestment,
         issueInputVoucher,
         bookMechanizationJob,
+        toggleMechanizationStatus,
+        updateMechanizationLog,
         logHarvestBatch,
         createWaybillRetrieval,
         createTradeContract,
