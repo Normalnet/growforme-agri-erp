@@ -108,6 +108,7 @@ export interface FarmAsset {
   gpsLat: number;
   gpsLng: number;
   polygonCoordinates?: [number, number][];
+  geoJsonRaw?: string;
   status: 'Prepared' | 'Planted' | 'Harvest Ready';
 }
 
@@ -160,8 +161,10 @@ export interface HarvestBatch {
   farmerId: string;
   farmerName: string;
   crop: string;
-  expectedYieldKg: number;
-  actualYieldKg: number;
+  expectedYieldMT: number;
+  actualYieldMT: number;
+  expectedYieldKg?: number;
+  actualYieldKg?: number;
   moistureContentPct: number;
   foreignMatterPct: number;
   aflatoxinPpb: number;
@@ -174,11 +177,13 @@ export interface HarvestBatch {
 export interface CommodityRetrieval {
   id: string;
   waybillNo: string;
+  farmerId?: string;
   farmerName: string;
   cooperativeCluster: string;
   commodity: string;
   bagsRetrieved: number;
-  grossWeightKg: number;
+  grossWeightMT: number;
+  grossWeightKg?: number;
   inKindDebtGHS: number;
   retrievedValueGHS: number;
   driverName: string;
@@ -191,6 +196,7 @@ export interface CommodityRetrieval {
 export interface TradeOrder {
   id: string;
   contractNo: string;
+  cycleName?: string;
   offtakerName: string;
   offtakerType: 'Ghana Commodity Exchange (GCX)' | 'Industrial Processor' | 'Exporter' | 'Local Feed Mill';
   commodity: string;
@@ -201,6 +207,23 @@ export interface TradeOrder {
   contractType: 'Spot Contract' | 'Futures Contract';
   deliveryDeadline: string;
   status: 'Pending' | 'Partially Fulfilled' | 'Completed' | 'Expired';
+  paymentStatus: 'Pending' | 'Partially Paid' | 'Fully Paid';
+  amountPaidGHS: number;
+}
+
+export interface FarmerSettlementItem {
+  farmerId: string;
+  farmerName: string;
+  momoNumber: string;
+  momoNetwork: string;
+  totalSpentGHS: number;
+  inputCostGHS: number;
+  mechanizationCostGHS: number;
+  harvestRetrievedValueGHS: number;
+  harvestWeightMT: number;
+  netProfitOrLossGHS: number;
+  farmerDueGHS: number;
+  status: 'Pending Execution' | 'MoMo Paid' | 'Loss Recorded';
 }
 
 export interface SettlementRecord {
@@ -213,4 +236,6 @@ export interface SettlementRecord {
   farmerNetProfitGHS: number;
   settlementDate: string;
   status: 'Waterfall Computed' | 'Settlement Executed' | 'Reconciled';
+  farmerDuesList?: FarmerSettlementItem[];
+  sourceTradeContractIds?: string[];
 }

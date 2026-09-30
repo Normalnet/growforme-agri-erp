@@ -209,7 +209,7 @@ PRODUCER & GEOSPATIAL DETAILS:
 ------------------------------
 Outgrower Farmer: ${hb.farmerName}
 Commodity Harvested: ${hb.crop} (${hb.qualityGrade})
-Total Batch Weight: ${hb.actualYieldKg.toLocaleString()} Kg
+Total Batch Weight: ${(hb.actualYieldMT || (hb.actualYieldKg ? hb.actualYieldKg / 1000 : 0)).toFixed(2)} MT (${(hb.actualYieldKg || (hb.actualYieldMT ? hb.actualYieldMT * 1000 : 0)).toLocaleString()} Kg)
 
 AGRONOMIC QUALITY ANALYSIS:
 ---------------------------
@@ -390,7 +390,9 @@ Export Clearance: AUTHORIZED FOR GCX & EUROPEAN UNION DESTINATIONS
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[11px]">Commodity Weight:</span>
-                    <strong className="text-emerald-400 text-sm block font-mono">{activePreviewDoc.data.actualYieldKg.toLocaleString()} Kg</strong>
+                    <strong className="text-emerald-400 text-sm block font-mono">
+                      {(activePreviewDoc.data.actualYieldMT || (activePreviewDoc.data.actualYieldKg ? activePreviewDoc.data.actualYieldKg / 1000 : 0)).toFixed(2)} MT ({(activePreviewDoc.data.actualYieldKg || (activePreviewDoc.data.actualYieldMT ? activePreviewDoc.data.actualYieldMT * 1000 : 0)).toLocaleString()} Kg)
+                    </strong>
                     <span className="text-slate-400 mt-1 block">Grade: {activePreviewDoc.data.qualityGrade}</span>
                   </div>
                 </div>

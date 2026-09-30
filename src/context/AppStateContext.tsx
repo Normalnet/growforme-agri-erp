@@ -143,12 +143,15 @@ interface AppStateContextType {
   addInvestment: (investmentData: Partial<Investment>) => void;
   issueInputVoucher: (voucherData: Partial<InputDisbursement>, farmerId: string, costGHS: number) => void;
   bookMechanizationJob: (jobData: Partial<MechanizationLog>, farmerId: string, costGHS: number) => void;
+  bulkBookMechanizationJobs: (jobRequests: { jobData: Partial<MechanizationLog>; farmerId: string; costGHS: number }[]) => void;
   toggleMechanizationStatus: (id: string) => void;
   updateMechanizationLog: (id: string, updatedData: Partial<MechanizationLog>) => void;
   logHarvestBatch: (batchData: Partial<HarvestBatch>) => void;
-  createWaybillRetrieval: (retrievalData: Partial<CommodityRetrieval>, farmerId: string, bags: number, valueGHS: number) => void;
+  createWaybillRetrieval: (retrievalData: Partial<CommodityRetrieval>, farmerId: string, bags: number, valueGHS: number, weightMT?: number) => void;
   createTradeContract: (tradeData: Partial<TradeOrder>) => void;
-  executeWaterfallSettlement: (cycleName: string, grossRevenue: number) => void;
+  updateTradePaymentStatus: (id: string, paymentStatus: 'Pending' | 'Partially Paid' | 'Fully Paid', amountPaidGHS: number) => void;
+  executeWaterfallSettlement: (cycleName: string, grossRevenue: number, duesList?: any[], sourceContractIds?: string[]) => void;
+  executeFarmerSettlementPayout: (settlementId: string) => void;
 
   deleteEntity: (type: string, id: string) => void;
   resetToDefaultSeed: () => void;
@@ -410,6 +413,8 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       tenureAgreement: farmData.tenureAgreement || 'Freehold',
       gpsLat: Number(farmData.gpsLat) || 9.4005,
       gpsLng: Number(farmData.gpsLng) || -0.9855,
+      polygonCoordinates: farmData.polygonCoordinates,
+      geoJsonRaw: farmData.geoJsonRaw,
       status: 'Prepared',
     };
 
@@ -549,6 +554,51 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     persistState({ cycles, budgetItems, partners, campaigns, investments, farmers: updatedFarmers, farms, inputs, disbursements, mechanizationLogs: updatedLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
   };
 
+  const bulkBookMechanizationJobs = (jobRequests: { jobData: Partial<MechanizationLog>; farmerId: string; costGHS: number }[]) => {
+    const newLogs: MechanizationLog[] = [];
+    const farmerCostMap = new Map<string, number>();
+
+    jobRequests.forEach((req, idx) => {
+      const farmer = farmers.find((f) => f.id === req.farmerId);
+      if (!farmer) return;
+      const farm = farms.find((f) => f.farmerId === farmer.id);
+
+      const log: MechanizationLog = {
+        id: `mech_${Date.now()}_${idx}`,
+        jobCardId: `JC-${req.jobData.machineryType?.includes('Drone') ? 'DRON' : 'TRAC'}-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+        farmId: farm ? farm.id : 'f_asset_01',
+        farmCode: farm ? farm.farmCode : 'GFM-BULK-01',
+        farmerName: farmer.fullName,
+        machineryType: req.jobData.machineryType || 'Tractor (Plowing)',
+        operatorName: req.jobData.operatorName || 'AgriFleet Regional Contractor',
+        acresCovered: Number(req.jobData.acresCovered) || (farm ? farm.acreage : 10),
+        fuelConsumedLitres: Number(req.jobData.fuelConsumedLitres) || (Number(req.jobData.acresCovered || 10) * 8),
+        startTime: '07:00 AM',
+        endTime: '05:00 PM',
+        status: 'In Progress',
+        lat: farm ? farm.gpsLat : 9.4005,
+        lng: farm ? farm.gpsLng : -0.9855,
+        costGHS: req.costGHS,
+      };
+      newLogs.push(log);
+      farmerCostMap.set(farmer.id, (farmerCostMap.get(farmer.id) || 0) + req.costGHS);
+    });
+
+    const updatedFarmers = farmers.map((f) => {
+      const addedCost = farmerCostMap.get(f.id);
+      if (addedCost) {
+        return { ...f, totalLoansInKindGHS: f.totalLoansInKindGHS + addedCost };
+      }
+      return f;
+    });
+
+    const updatedLogs = [...newLogs, ...mechanizationLogs];
+    setFarmers(updatedFarmers);
+    setMechanizationLogs(updatedLogs);
+
+    persistState({ cycles, budgetItems, partners, campaigns, investments, farmers: updatedFarmers, farms, inputs, disbursements, mechanizationLogs: updatedLogs, harvestBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
+  };
+
   const toggleMechanizationStatus = (id: string) => {
     const updatedLogs = mechanizationLogs.map((log) => {
       if (log.id === id) {
@@ -573,14 +623,19 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const logHarvestBatch = (batchData: Partial<HarvestBatch>) => {
+    const actualMT = Number(batchData.actualYieldMT) || (Number(batchData.actualYieldKg) ? Number(batchData.actualYieldKg) / 1000 : 25.0);
+    const expectedMT = Number(batchData.expectedYieldMT) || (Number(batchData.expectedYieldKg) ? Number(batchData.expectedYieldKg) / 1000 : 24.0);
+
     const newBatch: HarvestBatch = {
       id: `harv_${Date.now()}`,
       batchNo: `GFM-BATCH-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
       farmerId: batchData.farmerId || 'frm_01',
       farmerName: batchData.farmerName || 'Registered Farmer',
       crop: batchData.crop || 'Maize',
-      expectedYieldKg: Number(batchData.expectedYieldKg) || 10000,
-      actualYieldKg: Number(batchData.actualYieldKg) || 10500,
+      expectedYieldMT: expectedMT,
+      actualYieldMT: actualMT,
+      expectedYieldKg: Math.round(expectedMT * 1000),
+      actualYieldKg: Math.round(actualMT * 1000),
       moistureContentPct: Number(batchData.moistureContentPct) || 12.5,
       foreignMatterPct: 0.9,
       aflatoxinPpb: 3.5,
@@ -594,17 +649,20 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     persistState({ cycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches: updatedBatches, retrievals, tradeOrders, settlements, databaseUrl, customRoles, staffUsers });
   };
 
-  const createWaybillRetrieval = (retrievalData: Partial<CommodityRetrieval>, farmerId: string, bags: number, valueGHS: number) => {
+  const createWaybillRetrieval = (retrievalData: Partial<CommodityRetrieval>, farmerId: string, bags: number, valueGHS: number, weightMT?: number) => {
     const farmer = farmers.find((f) => f.id === farmerId) || farmers[0];
+    const calculatedMT = weightMT || (bags * 50) / 1000;
 
     const newRet: CommodityRetrieval = {
       id: `ret_${Date.now()}`,
       waybillNo: `WAY-GFM-${Math.floor(100 + Math.random() * 900)}`,
+      farmerId: farmer.id,
       farmerName: farmer.fullName,
       cooperativeCluster: farmer.cooperativeCluster,
       commodity: retrievalData.commodity || 'Maize (50kg Bags)',
       bagsRetrieved: bags,
-      grossWeightKg: bags * 50,
+      grossWeightMT: calculatedMT,
+      grossWeightKg: Math.round(calculatedMT * 1000),
       inKindDebtGHS: farmer.totalLoansInKindGHS,
       retrievedValueGHS: valueGHS,
       driverName: retrievalData.driverName || 'Driver Mensah',
@@ -628,26 +686,47 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const createTradeContract = (tradeData: Partial<TradeOrder>) => {
     const qty = Number(tradeData.quantityMT) || 100;
     const price = Number(tradeData.pricePerMTGHS) || 3500;
+    const totalVal = qty * price;
+
     const newTrade: TradeOrder = {
       id: `trd_${Date.now()}`,
       contractNo: `GCX-CONTRACT-${Math.floor(100 + Math.random() * 900)}`,
+      cycleName: tradeData.cycleName || cycles[0]?.name || 'Northern Maize & Soy Outgrower 2026',
       offtakerName: tradeData.offtakerName || 'Industrial Processor Ltd',
       offtakerType: tradeData.offtakerType || 'Industrial Processor',
       commodity: tradeData.commodity || 'Yellow Maize',
       quantityMT: qty,
       pricePerMTGHS: price,
-      totalValueGHS: qty * price,
+      totalValueGHS: totalVal,
       fulfilledQuantityMT: 0,
       contractType: tradeData.contractType || 'Spot Contract',
       deliveryDeadline: tradeData.deliveryDeadline || new Date().toISOString().split('T')[0],
       status: 'Pending',
+      paymentStatus: 'Pending',
+      amountPaidGHS: 0,
     };
     const updatedTrade = [newTrade, ...tradeOrders];
     setTradeOrders(updatedTrade);
     persistState({ cycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders: updatedTrade, settlements, databaseUrl, customRoles, staffUsers });
   };
 
-  const executeWaterfallSettlement = (cycleName: string, grossRevenue: number) => {
+  const updateTradePaymentStatus = (id: string, paymentStatus: 'Pending' | 'Partially Paid' | 'Fully Paid', amountPaidGHS: number) => {
+    const updatedTrade = tradeOrders.map((t) => {
+      if (t.id === id) {
+        return {
+          ...t,
+          paymentStatus,
+          amountPaidGHS: Number(amountPaidGHS) || 0,
+          status: paymentStatus === 'Fully Paid' && t.fulfilledQuantityMT >= t.quantityMT ? ('Completed' as const) : t.status,
+        };
+      }
+      return t;
+    });
+    setTradeOrders(updatedTrade);
+    persistState({ cycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders: updatedTrade, settlements, databaseUrl, customRoles, staffUsers });
+  };
+
+  const executeWaterfallSettlement = (cycleName: string, grossRevenue: number, duesList?: any[], sourceContractIds?: string[]) => {
     const investorPayout = grossRevenue * 0.60;
     const inputRecovery = grossRevenue * 0.15;
     const aggregatorCommission = grossRevenue * 0.05;
@@ -662,10 +741,31 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       aggregatorCommissionGHS: aggregatorCommission,
       farmerNetProfitGHS: farmerNetProfit,
       settlementDate: new Date().toISOString().split('T')[0],
-      status: 'Settlement Executed',
+      status: 'Waterfall Computed',
+      farmerDuesList: duesList || [],
+      sourceTradeContractIds: sourceContractIds || [],
     };
 
     const updatedSettlements = [newStl, ...settlements];
+    setSettlements(updatedSettlements);
+    persistState({ cycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders, settlements: updatedSettlements, databaseUrl, customRoles, staffUsers });
+  };
+
+  const executeFarmerSettlementPayout = (settlementId: string) => {
+    const updatedSettlements = settlements.map((s) => {
+      if (s.id === settlementId) {
+        const updatedDues = (s.farmerDuesList || []).map((due) => ({
+          ...due,
+          status: due.farmerDueGHS > 0 ? ('MoMo Paid' as const) : ('Loss Recorded' as const),
+        }));
+        return {
+          ...s,
+          status: 'Settlement Executed' as const,
+          farmerDuesList: updatedDues,
+        };
+      }
+      return s;
+    });
     setSettlements(updatedSettlements);
     persistState({ cycles, budgetItems, partners, campaigns, investments, farmers, farms, inputs, disbursements, mechanizationLogs, harvestBatches, retrievals, tradeOrders, settlements: updatedSettlements, databaseUrl, customRoles, staffUsers });
   };
@@ -740,12 +840,15 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         addInvestment,
         issueInputVoucher,
         bookMechanizationJob,
+        bulkBookMechanizationJobs,
         toggleMechanizationStatus,
         updateMechanizationLog,
         logHarvestBatch,
         createWaybillRetrieval,
         createTradeContract,
+        updateTradePaymentStatus,
         executeWaterfallSettlement,
+        executeFarmerSettlementPayout,
         deleteEntity,
         resetToDefaultSeed,
       }}

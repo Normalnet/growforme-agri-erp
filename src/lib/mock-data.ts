@@ -119,9 +119,66 @@ export const mockFarmers: Farmer[] = [
 ];
 
 export const mockFarms: FarmAsset[] = [
-  { id: 'f_asset_01', farmerId: 'frm_01', farmerName: 'Yakubu Mohammed', farmCode: 'GFM-NR-NYA-001', crop: 'Yellow Maize', acreage: 12, soilType: 'Sandy Loam', tenureAgreement: 'Freehold', gpsLat: 9.4005, gpsLng: -0.9855, status: 'Planted' },
-  { id: 'f_asset_02', farmerId: 'frm_02', farmerName: 'Aminatu Seidu', farmCode: 'GFM-NR-SAV-042', crop: 'Soybeans', acreage: 8, soilType: 'Clay Loam', tenureAgreement: 'Leasehold', gpsLat: 9.6251, gpsLng: -0.8264, status: 'Planted' },
-  { id: 'f_asset_03', farmerId: 'frm_03', farmerName: 'Kwabena Appiah', farmCode: 'GFM-AR-EJU-109', crop: 'Soybeans', acreage: 25, soilType: 'Loam', tenureAgreement: 'Sharecropping (Abunu/Abusa)', gpsLat: 7.3789, gpsLng: -1.3621, status: 'Harvest Ready' },
+  {
+    id: 'f_asset_01',
+    farmerId: 'frm_01',
+    farmerName: 'Yakubu Mohammed',
+    farmCode: 'GFM-NR-NYA-001',
+    crop: 'Yellow Maize',
+    acreage: 12,
+    soilType: 'Sandy Loam',
+    tenureAgreement: 'Freehold',
+    gpsLat: 9.4005,
+    gpsLng: -0.9855,
+    polygonCoordinates: [
+      [9.4035, -0.9885],
+      [9.4045, -0.9825],
+      [9.3975, -0.9815],
+      [9.3965, -0.9875],
+      [9.4035, -0.9885],
+    ],
+    status: 'Planted',
+  },
+  {
+    id: 'f_asset_02',
+    farmerId: 'frm_02',
+    farmerName: 'Aminatu Seidu',
+    farmCode: 'GFM-NR-SAV-042',
+    crop: 'Soybeans',
+    acreage: 8,
+    soilType: 'Clay Loam',
+    tenureAgreement: 'Leasehold',
+    gpsLat: 9.6251,
+    gpsLng: -0.8264,
+    polygonCoordinates: [
+      [9.6281, -0.8294],
+      [9.6291, -0.8234],
+      [9.6221, -0.8224],
+      [9.6211, -0.8284],
+      [9.6281, -0.8294],
+    ],
+    status: 'Planted',
+  },
+  {
+    id: 'f_asset_03',
+    farmerId: 'frm_03',
+    farmerName: 'Kwabena Appiah',
+    farmCode: 'GFM-AR-EJU-109',
+    crop: 'Soybeans',
+    acreage: 25,
+    soilType: 'Loam',
+    tenureAgreement: 'Sharecropping (Abunu/Abusa)',
+    gpsLat: 7.3789,
+    gpsLng: -1.3621,
+    polygonCoordinates: [
+      [7.3839, -1.3671],
+      [7.3849, -1.3571],
+      [7.3739, -1.3561],
+      [7.3729, -1.3661],
+      [7.3839, -1.3671],
+    ],
+    status: 'Harvest Ready',
+  },
 ];
 
 export const mockInputs: InputInventory[] = [
@@ -142,22 +199,74 @@ export const mockMechanizationLogs: MechanizationLog[] = [
 ];
 
 export const mockHarvestBatches: HarvestBatch[] = [
-  { id: 'harv_01', batchNo: 'GFM-BATCH-2026-001', farmerId: 'frm_01', farmerName: 'Yakubu Mohammed', crop: 'Yellow Maize', expectedYieldKg: 24000, actualYieldKg: 25200, moistureContentPct: 12.8, foreignMatterPct: 0.8, aflatoxinPpb: 4.2, eudrCompliant: true, qualityGrade: 'Grade A', warehouseReceiptNo: 'WHR-GCX-0912', dateHarvested: '2026-10-14' },
-  { id: 'harv_02', batchNo: 'GFM-BATCH-2026-002', farmerId: 'frm_02', farmerName: 'Aminatu Seidu', crop: 'Soybeans', expectedYieldKg: 12000, actualYieldKg: 11400, moistureContentPct: 11.2, foreignMatterPct: 1.1, aflatoxinPpb: 2.1, eudrCompliant: true, qualityGrade: 'Grade A', warehouseReceiptNo: 'WHR-GCX-0915', dateHarvested: '2026-10-18' },
+  { id: 'harv_01', batchNo: 'GFM-BATCH-2026-001', farmerId: 'frm_01', farmerName: 'Yakubu Mohammed', crop: 'Yellow Maize', expectedYieldMT: 24.0, actualYieldMT: 25.2, expectedYieldKg: 24000, actualYieldKg: 25200, moistureContentPct: 12.8, foreignMatterPct: 0.8, aflatoxinPpb: 4.2, eudrCompliant: true, qualityGrade: 'Grade A', warehouseReceiptNo: 'WHR-GCX-0912', dateHarvested: '2026-10-14' },
+  { id: 'harv_02', batchNo: 'GFM-BATCH-2026-002', farmerId: 'frm_02', farmerName: 'Aminatu Seidu', crop: 'Soybeans', expectedYieldMT: 12.0, actualYieldMT: 11.4, expectedYieldKg: 12000, actualYieldKg: 11400, moistureContentPct: 11.2, foreignMatterPct: 1.1, aflatoxinPpb: 2.1, eudrCompliant: true, qualityGrade: 'Grade A', warehouseReceiptNo: 'WHR-GCX-0915', dateHarvested: '2026-10-18' },
 ];
 
 export const mockCommodityRetrievals: CommodityRetrieval[] = [
-  { id: 'ret_01', waybillNo: 'WAY-GFM-991', farmerName: 'Yakubu Mohammed', cooperativeCluster: 'Nyankpala Maize Outgrowers', commodity: 'Yellow Maize (50kg Bags)', bagsRetrieved: 120, grossWeightKg: 6000, inKindDebtGHS: 4475, retrievedValueGHS: 18000, driverName: 'Salifu Issah (MAN Diesel 10-Ton)', vehicleRegNo: 'NR 4412-24', destinationDepot: 'Tamale GCX Depot', status: 'Received at Depot', date: '2026-10-16' },
-  { id: 'ret_02', waybillNo: 'WAY-GFM-994', farmerName: 'Aminatu Seidu', cooperativeCluster: 'Northern Women Soy Co-op', commodity: 'Soybeans (50kg Bags)', bagsRetrieved: 80, grossWeightKg: 4000, inKindDebtGHS: 2800, retrievedValueGHS: 16000, driverName: 'Kofi Mensah', vehicleRegNo: 'AS 9012-23', destinationDepot: 'Tamale Main Warehouse', status: 'In Transit', date: '2026-10-19' },
+  { id: 'ret_01', waybillNo: 'WAY-GFM-991', farmerId: 'frm_01', farmerName: 'Yakubu Mohammed', cooperativeCluster: 'Nyankpala Maize Outgrowers', commodity: 'Yellow Maize (50kg Bags)', bagsRetrieved: 120, grossWeightMT: 6.0, grossWeightKg: 6000, inKindDebtGHS: 4475, retrievedValueGHS: 18000, driverName: 'Salifu Issah (MAN Diesel 10-Ton)', vehicleRegNo: 'NR 4412-24', destinationDepot: 'Tamale GCX Depot', status: 'Received at Depot', date: '2026-10-16' },
+  { id: 'ret_02', waybillNo: 'WAY-GFM-994', farmerId: 'frm_02', farmerName: 'Aminatu Seidu', cooperativeCluster: 'Northern Women Soy Co-op', commodity: 'Soybeans (50kg Bags)', bagsRetrieved: 80, grossWeightMT: 4.0, grossWeightKg: 4000, inKindDebtGHS: 2800, retrievedValueGHS: 16000, driverName: 'Kofi Mensah', vehicleRegNo: 'AS 9012-23', destinationDepot: 'Tamale Main Warehouse', status: 'In Transit', date: '2026-10-19' },
 ];
 
 export const mockTradeOrders: TradeOrder[] = [
-  { id: 'trd_01', contractNo: 'GCX-MAIZE-2026-101', offtakerName: 'Ghana Commodity Exchange (GCX)', offtakerType: 'Ghana Commodity Exchange (GCX)', commodity: 'Grade A Yellow Maize', quantityMT: 500, pricePerMTGHS: 3200, totalValueGHS: 1600000, fulfilledQuantityMT: 350, contractType: 'Spot Contract', deliveryDeadline: '2026-11-15', status: 'Partially Fulfilled' },
-  { id: 'trd_02', contractNo: 'YENTI-SOY-2026-88', offtakerName: 'Yenti Oils & Poultry Feeds Kumasi', offtakerType: 'Industrial Processor', commodity: 'Non-GMO Soybeans', quantityMT: 300, pricePerMTGHS: 4200, totalValueGHS: 1260000, fulfilledQuantityMT: 300, contractType: 'Futures Contract', deliveryDeadline: '2026-11-01', status: 'Completed' },
-  { id: 'trd_03', contractNo: 'EXPORT-CASH-2026-05', offtakerName: 'Olam Agri International', offtakerType: 'Exporter', commodity: 'Raw Cashew Nuts (KOR 48)', quantityMT: 1000, pricePerMTGHS: 9800, totalValueGHS: 9800000, fulfilledQuantityMT: 1000, contractType: 'Futures Contract', deliveryDeadline: '2026-10-30', status: 'Completed' },
+  { id: 'trd_01', contractNo: 'GCX-MAIZE-2026-101', cycleName: 'Northern Maize & Soy Outgrower 2026', offtakerName: 'Ghana Commodity Exchange (GCX)', offtakerType: 'Ghana Commodity Exchange (GCX)', commodity: 'Grade A Yellow Maize', quantityMT: 500, pricePerMTGHS: 3200, totalValueGHS: 1600000, fulfilledQuantityMT: 350, contractType: 'Spot Contract', deliveryDeadline: '2026-11-15', status: 'Partially Fulfilled', paymentStatus: 'Partially Paid', amountPaidGHS: 1120000 },
+  { id: 'trd_02', contractNo: 'YENTI-SOY-2026-88', cycleName: 'Northern Maize & Soy Outgrower 2026', offtakerName: 'Yenti Oils & Poultry Feeds Kumasi', offtakerType: 'Industrial Processor', commodity: 'Non-GMO Soybeans', quantityMT: 300, pricePerMTGHS: 4200, totalValueGHS: 1260000, fulfilledQuantityMT: 300, contractType: 'Futures Contract', deliveryDeadline: '2026-11-01', status: 'Completed', paymentStatus: 'Fully Paid', amountPaidGHS: 1260000 },
+  { id: 'trd_03', contractNo: 'EXPORT-CASH-2026-05', cycleName: 'Techiman Cashew Export Cluster', offtakerName: 'Olam Agri International', offtakerType: 'Exporter', commodity: 'Raw Cashew Nuts (KOR 48)', quantityMT: 1000, pricePerMTGHS: 9800, totalValueGHS: 9800000, fulfilledQuantityMT: 1000, contractType: 'Futures Contract', deliveryDeadline: '2026-10-30', status: 'Completed', paymentStatus: 'Fully Paid', amountPaidGHS: 9800000 },
 ];
 
 export const mockSettlements: SettlementRecord[] = [
-  { id: 'stl_01', cycleName: 'Techiman Cashew Export Cluster', grossRevenueGHS: 9800000, investorPayoutGHS: 6100000, inputRecoveryGHS: 1200000, aggregatorCommissionGHS: 490000, farmerNetProfitGHS: 2010000, settlementDate: '2026-10-31', status: 'Settlement Executed' },
-  { id: 'stl_02', cycleName: 'Northern Maize & Soy Outgrower 2026', grossRevenueGHS: 2860000, investorPayoutGHS: 1750000, inputRecoveryGHS: 480000, aggregatorCommissionGHS: 143000, farmerNetProfitGHS: 487000, settlementDate: '2026-11-20', status: 'Waterfall Computed' },
+  {
+    id: 'stl_01',
+    cycleName: 'Techiman Cashew Export Cluster',
+    grossRevenueGHS: 9800000,
+    investorPayoutGHS: 6100000,
+    inputRecoveryGHS: 1200000,
+    aggregatorCommissionGHS: 490000,
+    farmerNetProfitGHS: 2010000,
+    settlementDate: '2026-10-31',
+    status: 'Settlement Executed',
+    sourceTradeContractIds: ['trd_03'],
+  },
+  {
+    id: 'stl_02',
+    cycleName: 'Northern Maize & Soy Outgrower 2026',
+    grossRevenueGHS: 2860000,
+    investorPayoutGHS: 1750000,
+    inputRecoveryGHS: 480000,
+    aggregatorCommissionGHS: 143000,
+    farmerNetProfitGHS: 487000,
+    settlementDate: '2026-11-20',
+    status: 'Waterfall Computed',
+    sourceTradeContractIds: ['trd_01', 'trd_02'],
+    farmerDuesList: [
+      {
+        farmerId: 'frm_01',
+        farmerName: 'Yakubu Mohammed',
+        momoNumber: '0244112233',
+        momoNetwork: 'MTN MoMo',
+        totalSpentGHS: 6875,
+        inputCostGHS: 4475,
+        mechanizationCostGHS: 2400,
+        harvestRetrievedValueGHS: 18000,
+        harvestWeightMT: 6.0,
+        netProfitOrLossGHS: 11125,
+        farmerDueGHS: 11125,
+        status: 'Pending Execution',
+      },
+      {
+        farmerId: 'frm_02',
+        farmerName: 'Aminatu Seidu',
+        momoNumber: '0559988776',
+        momoNetwork: 'MTN MoMo',
+        totalSpentGHS: 3760,
+        inputCostGHS: 2800,
+        mechanizationCostGHS: 960,
+        harvestRetrievedValueGHS: 16000,
+        harvestWeightMT: 4.0,
+        netProfitOrLossGHS: 12240,
+        farmerDueGHS: 12240,
+        status: 'Pending Execution',
+      },
+    ],
+  },
 ];

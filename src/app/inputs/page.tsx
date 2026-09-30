@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '../layout-wrapper';
 import { useAppState } from '@/context/AppStateContext';
 import { INPUT_CATALOG } from '@/lib/ghana-data';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { Truck, Plus, QrCode, Key, Package, CheckCircle2, X } from 'lucide-react';
 
 export default function InputsModule() {
@@ -57,7 +58,7 @@ export default function InputsModule() {
       </div>
 
       {/* Warehouse Stock Grid */}
-      <div className="space-y-4">
+      <div className="space-y-4 mt-6">
         <h3 className="text-base font-bold text-white">Central Agro-Depot Catalog & Inventory Stock</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {INPUT_CATALOG.map((inp) => (
@@ -138,7 +139,10 @@ export default function InputsModule() {
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-              <h3 className="font-extrabold text-white text-lg">Issue Input Voucher (In-Kind Credit)</h3>
+              <div>
+                <h3 className="font-extrabold text-white text-lg">Issue Input Voucher (In-Kind Credit)</h3>
+                <p className="text-xs text-slate-400">Search and assign inputs to verified outgrowers.</p>
+              </div>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
@@ -146,33 +150,31 @@ export default function InputsModule() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Select Beneficiary Farmer</label>
-                <select
+                <SearchableSelect
+                  label="Select Beneficiary Farmer"
+                  options={farmers.map((f) => ({
+                    value: f.id,
+                    label: f.fullName,
+                    subtext: `${f.community} • Current Debt: GH₵ ${f.totalLoansInKindGHS}`,
+                    badge: `${f.totalAcreage} Ac`,
+                  }))}
                   value={selectedFarmerId}
-                  onChange={(e) => setSelectedFarmerId(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:border-sky-500 outline-none"
-                >
-                  {farmers.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.fullName} ({f.community}) - Debt: GH₵ {f.totalLoansInKindGHS}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSelectedFarmerId}
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-300 mb-1">Select Input Catalog Item</label>
-                <select
+                <SearchableSelect
+                  label="Select Input Catalog Item"
+                  options={INPUT_CATALOG.map((item) => ({
+                    value: item.itemCode,
+                    label: item.name,
+                    subtext: `${item.category} • GH₵ ${item.unitCostGHS} per ${item.unit}`,
+                    badge: item.category,
+                  }))}
                   value={selectedCatalogItem}
-                  onChange={(e) => setSelectedCatalogItem(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
-                >
-                  {INPUT_CATALOG.map((item) => (
-                    <option key={item.itemCode} value={item.itemCode}>
-                      {item.name} — GH₵ {item.unitCostGHS} per {item.unit}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setSelectedCatalogItem}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -183,7 +185,7 @@ export default function InputsModule() {
                     required
                     value={depotName}
                     onChange={(e) => setDepotName(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none focus:border-sky-500"
                   />
                 </div>
                 <div>
@@ -193,7 +195,7 @@ export default function InputsModule() {
                     required
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none focus:border-sky-500"
                   />
                 </div>
               </div>
@@ -204,10 +206,17 @@ export default function InputsModule() {
               </div>
 
               <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-xs font-bold text-slate-400">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white"
+                >
                   Cancel
                 </button>
-                <button type="submit" className="px-5 py-2 text-xs font-bold bg-sky-500 text-slate-950 rounded-xl hover:bg-sky-400">
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-xs font-bold bg-sky-500 text-slate-950 rounded-xl hover:bg-sky-400 transition"
+                >
                   Issue Voucher & Send OTP
                 </button>
               </div>
